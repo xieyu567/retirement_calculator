@@ -11,3 +11,5 @@ lazy val firstItem = project
             "org.scalatest" %% "scalatest" % scalatestVer,
         )
     )
+
+Compile / packageBin / mainClass := Some("retcalc.SimulatePlanApp")
