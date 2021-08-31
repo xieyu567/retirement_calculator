@@ -1,7 +1,7 @@
 import org.scalactic.{Equality, TolerantNumerics, TypeCheckedTripleEquals}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import retcalc.{FixedReturns, OffsetReturns, Returns, VariableReturn, VariableReturns}
+import retcalc.{EquityData, FixedReturns, InflationData, OffsetReturns, Returns, VariableReturn, VariableReturns}
 
 
 class ReturnSpec extends AnyWordSpec with Matchers with TypeCheckedTripleEquals {
@@ -54,19 +54,55 @@ class ReturnSpec extends AnyWordSpec with Matchers with TypeCheckedTripleEquals 
     }
 
     "Returns.monthlyReturn" should {
-        "return a fixed rate for a FixedReturn" in pending
-
         val variableReturns = VariableReturns(
             Vector(VariableReturn("2000.01", 0.1), VariableReturn("2000.02", 0.2))
         )
 
-        "return the nth rate for VariableReturn" in pending
-
-        "return an error if n > length" in pending
-
         "return the n+offset the rate for OffsetReturn" in {
             val returns = OffsetReturns(variableReturns, 1)
             Returns.monthlyRate(returns, 0) should ===(0.2)
+        }
+    }
+
+    "Returns.fromEquitAndInflationData" should {
+        "compute real total returns from equity and inflation data" in {
+            val equities = Vector(
+                EquityData("2117.01", 100.0, 10.0),
+                EquityData("2117.02", 101.0, 12.0),
+                EquityData("2117.03", 102.0, 12.0)
+            )
+
+            val inflations = Vector(
+                InflationData("2117.01", 100.0),
+                InflationData("2117.02", 102.0),
+                InflationData("2117.03", 102.0)
+            )
+
+            val returns: VariableReturns = Returns.fromEquityAndInflationData(equities, inflations)
+            returns should ===(VariableReturns(Vector(
+                VariableReturn("2117.02", (101.0 + 12.0 / 12) / 100.0 - 102.0 / 100.0),
+                VariableReturn("2117.03", (102.0 + 12.0 / 12) / 101.0 - 102.0 / 102.0)
+            )))
+        }
+
+        "compute one or zero elements in returns" in {
+            val equitiesOne = Vector(
+                EquityData("2117.01", 100.0, 10.0)
+            )
+
+            val inflationDataOne = Vector(
+                InflationData("2117.01", 100.0)
+            )
+
+            val equitiesZero = Vector()
+
+            val inflationDataZero = Vector()
+
+            val returnsOne = Returns.fromEquityAndInflationData(equitiesOne, inflationDataOne)
+            returnsOne should ===(VariableReturns(Vector()))
+
+            val returnsZero = Returns.fromEquityAndInflationData(equitiesZero, inflationDataZero)
+            returnsZero should ===(VariableReturns(Vector()))
         }
     }
 }
