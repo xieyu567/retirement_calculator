@@ -1,7 +1,7 @@
 import org.scalactic.{Equality, TolerantNumerics, TypeCheckedTripleEquals}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import retcalc.{EquityData, FixedReturns, InflationData, OffsetReturns, Returns, VariableReturn, VariableReturns}
+import retcalc.{EquityData, FixedReturns, InflationData, OffsetReturns, RetCalcError, Returns, VariableReturn, VariableReturns}
 
 
 class ReturnSpec extends AnyWordSpec with Matchers with TypeCheckedTripleEquals {
@@ -34,8 +34,8 @@ class ReturnSpec extends AnyWordSpec with Matchers with TypeCheckedTripleEquals 
 
     "Returns.monthlyRate" should {
         "return a fixed rate for a FixedReturn" in {
-            Returns.monthlyRate(FixedReturns(0.04), 0) should ===(0.04 / 12)
-            Returns.monthlyRate(FixedReturns(0.04), 10) should ===(0.04 / 12)
+            Returns.monthlyRate(FixedReturns(0.04), 0).getOrElse() should ===(0.04 / 12)
+            Returns.monthlyRate(FixedReturns(0.04), 10).getOrElse() should ===(0.04 / 12)
         }
 
         val variableReturns = VariableReturns(Vector(
@@ -43,13 +43,12 @@ class ReturnSpec extends AnyWordSpec with Matchers with TypeCheckedTripleEquals 
             VariableReturn("2000.02", 0.2)
         ))
         "return the nth rate for VariableReturn" in {
-            Returns.monthlyRate(variableReturns, 0) should ===(0.1)
-            Returns.monthlyRate(variableReturns, 1) should ===(0.2)
+            Returns.monthlyRate(variableReturns, 0).getOrElse() should ===(0.1)
+            Returns.monthlyRate(variableReturns, 1).getOrElse() should ===(0.2)
         }
-        "roll over from the first rate if n > length" in {
-            Returns.monthlyRate(variableReturns, 2) should ===(0.1)
-            Returns.monthlyRate(variableReturns, 3) should ===(0.2)
-            Returns.monthlyRate(variableReturns, 4) should ===(0.1)
+        "return None if n > length" in {
+            Returns.monthlyRate(variableReturns, 2).left.getOrElse() should ===(RetCalcError.ReturnMonthOutOfBounds(2, 1))
+            Returns.monthlyRate(variableReturns, 3).left.getOrElse() should ===(RetCalcError.ReturnMonthOutOfBounds(3, 1))
         }
     }
 
@@ -60,7 +59,7 @@ class ReturnSpec extends AnyWordSpec with Matchers with TypeCheckedTripleEquals 
 
         "return the n+offset the rate for OffsetReturn" in {
             val returns = OffsetReturns(variableReturns, 1)
-            Returns.monthlyRate(returns, 0) should ===(0.2)
+            Returns.monthlyRate(returns, 0).getOrElse() should ===(0.2)
         }
     }
 

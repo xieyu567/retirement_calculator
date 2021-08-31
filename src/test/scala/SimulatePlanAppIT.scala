@@ -17,5 +17,13 @@ class SimulatePlanAppIT extends AnyWordSpec with Matchers with TypeCheckedTriple
                    |""".stripMargin
             actualResult should ===(expectedResult)
         }
+
+        "return an error when the period exceeds the returns bounds" in {
+            val actualResult = SimulatePlanApp.strMain(
+                Array("1952.09,2017.09", "25", "60", "3000", "2000", "10000")
+            )
+            val expectedResult = "Cannot get the return for month 780. Accepted range: 0 to 779"
+            actualResult should ===(expectedResult)
+        }
     }
 }
