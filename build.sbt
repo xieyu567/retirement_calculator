@@ -9,6 +9,7 @@ lazy val firstItem = project
         libraryDependencies ++= Seq(
             "org.scalactic" %% "scalactic" % scalatestVer,
             "org.scalatest" %% "scalatest" % scalatestVer,
+            "org.typelevel" %% "cats-core" % "2.6.1",
         )
     )
 
