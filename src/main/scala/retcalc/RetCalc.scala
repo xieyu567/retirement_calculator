@@ -2,8 +2,6 @@ package retcalc
 
 import retcalc.RetCalcError.MoreExpensesThanIncome
 
-import scala.annotation.tailrec
-
 case class RetCalcParams(nbOfMonthsInRetirement: Int, netIncome: Int,
                          currentExpenses: Int, initialCapital: Double)
 

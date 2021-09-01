@@ -1,12 +1,21 @@
 package retcalc
 
+import cats.data.Validated.{Invalid, Valid}
 import cats.data.{NonEmptyList, Validated}
 import cats.implicits.catsSyntaxValidatedId
 import retcalc.RetCalcError.{InvalidArgument, InvalidNumber, RetCalcResult}
 import cats.implicits._
 
 object SimulatePlanApp extends App {
-    println(strMain(args))
+    strMain(args) match {
+        case Invalid(e) =>
+            println(e)
+            sys.exit(1)
+
+        case Valid(a) =>
+            println(a)
+            sys.exit(0)
+    }
 
     def strMain(args: Array[String]): Validated[String, String] = {
         if (args.length != 6)
